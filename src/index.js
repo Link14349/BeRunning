@@ -2,12 +2,17 @@
 
 class BeRunning
 {
-    static Export(namespace, plugin) {
+    static Export(namespace, plugin, by) {
         if (!BeRunning._plugins.namespaces[namespace]) BeRunning._plugins.namespaces[namespace] = {};
+        if (by !== void(0)) BeRunning[by] = {};
         for (let i in plugin) {
             BeRunning._plugins.namespaces[namespace][i] = plugin[i];
             if (plugin[i].bind == BeRunning.global) {
-                BeRunning[i] = plugin[i].value;
+                if (by === void(0)) {
+                    BeRunning[i] = plugin[i].value;
+                } else {
+                    BeRunning[by][i] = plugin[i].value;
+                }
             } else {
                 plugin[i].bind.prototype[i] = plugin[i].value;
             }
@@ -18,7 +23,7 @@ class BeRunning
         this._using = namespace;
     }
     static VERSION() {
-        return "BeRunning-v0.0.1";
+        return "BeRunning-v0.1.1";
     }
     constructor(id) {
         console.log(BeRunning.VERSION());

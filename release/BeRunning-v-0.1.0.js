@@ -29,7 +29,7 @@ class BeRunning
         this._using = namespace;
     }
     static VERSION() {
-        return "BeRunning-v0.0.1";
+        return "BeRunning-v0.1.0";
     }
     constructor(id) {
         console.log(BeRunning.VERSION());
