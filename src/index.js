@@ -2,6 +2,21 @@
 
 class BeRunning
 {
+    static Export(namespace, plugin) {
+        if (!BeRunning._plugins.namespaces[namespace]) BeRunning._plugins.namespaces[namespace] = {};
+        for (let i in plugin) {
+            BeRunning._plugins.namespaces[namespace][i] = plugin[i];
+            if (plugin[i].bind == BeRunning.global) {
+                BeRunning[i] = plugin[i].value;
+            } else {
+                plugin[i].bind.prototype[i] = plugin[i].value;
+            }
+            // console.log(plugin);
+        }
+    }
+    using(namespace) {
+        this._using = namespace;
+    }
     static VERSION() {
         return "BeRunning-v0.0.1";
     }
@@ -19,6 +34,7 @@ class BeRunning
         this.KEY_PRESS = 3;
         this._focal = null;
         this._audios = {};
+        this.using("BR");
     }
     width(w) {
         if (w) {
@@ -171,3 +187,8 @@ class BeRunning
         }
     }
 }
+BeRunning._plugins = {
+    namespaces: {},
+    default_using: "BR"
+};
+BeRunning.global = true;// This is a property for binding plugins. If the plugin is a global binding, the bind property should be BeRunning.global

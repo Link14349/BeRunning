@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test-2</title>
+    <script type="text/javascript" src="../../src/plugin.js"></script>
+    <script type="text/javascript" src="../../src/index.js"></script>
+    <script type="text/javascript" src="../../src/item.js"></script>
+    <script type="text/javascript" src="../../src/controls.js"></script>
+    <script type="text/javascript" src="../../src/window.js"></script>
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<canvas id="main"></canvas>
+<script type="text/javascript">
+    let game = new BeRunning("main");
+    // let item = new Item("a", 0, 0, 100, 100, 10, "../../example/images/wall.jpeg");
+    let item = new Item("a", 0, 0, 100, 100, 10, BeRunning.selfCreate);
+    item.customize(function (ctx) {
+        ctx.fillStyle = "#eee";
+        ctx.fillRect(this.x(), this.y(), this.width(), this.height());
+    });
+    game.full();
+    game.bind(item);
+    game.render(function () {
+        item.x(item.x() + 5);
+        if (item.x() > game.width()) item.x(-100);
+    });
+    item.text("Hello World!", "#000", "100px sans-serif", {
+        x: 0, y: 100
+    });
+</script>
+</body>
+</html>

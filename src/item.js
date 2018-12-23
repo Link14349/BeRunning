@@ -10,17 +10,21 @@ class Item
         this._height = height;
         this._layer = layer;
         this._parent = null;
-        this._material = new Image();
-        this._material.src = material;
         this._material_finish = false;
+        if (material !== BeRunning.selfCreate) {
+            this._material = new Image();
+            this._material.src = material;
+            this._material.onload = function () {
+                th._material_finish = true;
+            }
+        } else {
+            this._material_finish = true;
+        }
         this._values = {};
         this._audios = {};
         this._rotate = 0;
         this._destory = false;
         let th = this;
-        this._material.onload = function () {
-            th._material_finish = true;
-        }
     }
     name() {
         return this._name;
@@ -91,11 +95,24 @@ class Item
         // height * cos(r)
         x += this.height() * Math.cos(this._rotate) / 2;
         y -= this.height() * Math.sin(this._rotate);
-        ctx.drawImage(
-            this._material,
-            x, y,
-            this._width * this._parent.scale(), this._height * this._parent.scale()
-        );
+        if (this._material === BeRunning.selfCreate) {
+            this["customize-render"](ctx);
+        } else {
+            ctx.drawImage(
+                this._material,
+                x, y,
+                this._width * this._parent.scale(), this._height * this._parent.scale()
+            );
+        }
+        for (let i in this) {
+            if (
+                typeof this[i] == "function" &&
+                    i.search(/-render$/) > -1 &&
+                    i !== "customize-render"
+            ) {
+                this[i]();
+            }
+        }
         ctx.rotate(-this._rotate);
         return this;
     }
@@ -199,3 +216,51 @@ class Item
         return "item";
     }
 }
+
+!function () {
+    let BR_text = new Plugin();
+    BR_text.Export("text", Item, function (txt, color, font, offset) {
+        this._txt = txt;
+        if (color === void(0)) {
+            this._font_color = "#000";
+        } else {
+            this._font_color = color;
+        }
+        if (font === void(0)) {
+            this._font = "bold 100px";
+        } else {
+            this._font = font;
+        }
+        if (font === void(0)) {
+            this._offset = 0;
+        } else {
+            this._offset = offset;
+        }
+        return this;
+    });
+    BR_text.Export("text-render", Item, function () {
+        let ctx = this._parent.ctx();
+        // console.log(this);
+        ctx.fillStyle = this._font_color;
+        ctx.font = this._font;
+        // console.log(this._txt, this._font_color, this._font_size);
+        if (typeof this._offset == "number")
+            ctx.fillText(this._txt, this.x() + this._offset, this.y() + this._offset);
+        else
+            ctx.fillText(this._txt, this.x() + this._offset.x, this.y() + this._offset.y);
+        // console.log(ctx.font);
+        return this;
+    });
+    BeRunning.Export("BR", BR_text);
+    let materialCreator = new Plugin();
+    materialCreator.Export("selfCreate", BeRunning.global, true);
+    materialCreator.Export("customize", Item, function (customizeFun) {
+        this._material = BeRunning.selfCreate;
+        this._customize = customizeFun;
+    });
+    materialCreator.Export("customize-render", Item, function () {
+        let ctx = this._parent.ctx();
+        this._customize(ctx);
+    });
+    BeRunning.Export("BR", materialCreator);
+}();
